@@ -53,6 +53,18 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
+import android.hardware.usb.UsbDeviceConnection;
+import android.app.PendingIntent;
+
+import android.content.res.AssetManager;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.lang.String;
+
+
 
 /**
     SDL Activity
@@ -229,6 +241,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static SDLFileDialogState mFileDialogState = null;
     protected static boolean mDispatchingKeyEvent = false;
 
+//     private static final String ACTION_USB_PERMISSION = "com.example.myapplication.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "org.libusb.app.USB_PERMISSION";
+
+    protected static String usbfs_path;
+    protected static int file_descriptor;
+    private static UsbDeviceConnection connection;
+
+
     public static SDLGenericMotionListener_API14 getMotionListener() {
         if (mMotionListener == null) {
             if (Build.VERSION.SDK_INT >= 29 /* Android 10 (Q) */) {
@@ -335,6 +355,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mHasFocus = true;
         mNextNativeState = NativeState.INIT;
         mCurrentNativeState = NativeState.INIT;
+
+        file_descriptor = -1;
+        usbfs_path = null;
+        connection = null;
     }
 
     protected SDLSurface createSDLSurface(Context context) {
@@ -1963,7 +1987,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
 
-            int flags = Intent.FLAG_ACTIVITY_NO_HISTORY 
+            int flags = Intent.FLAG_ACTIVITY_NO_HISTORY
                       | Intent.FLAG_ACTIVITY_MULTIPLE_TASK
                       | Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
             i.addFlags(flags);
@@ -2144,6 +2168,162 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
         return result;
     }
+
+    public static void findDevice()
+    {
+        if (mSingleton != null) {
+            mSingleton.findDeviceBis();
+        }
+    }
+
+// similar code in SDL/android-project/app/src/main/java/org/libsdl/app/HIDDeviceManager.java -> openDevice
+    public void findDeviceBis()
+    {
+        Log.d(TAG, "findDevice");
+        PendingIntent mPermissionIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Intent intent = new Intent(SDLActivity.ACTION_USB_PERMISSION);
+            intent.setPackage(SDL.getContext().getPackageName());
+
+
+//             Android_JNI_PollInputDevices
+            mPermissionIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);  //???
+        } else {
+            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);  //???
+        }
+        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);  //Handle to system USB service?
+        HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
+        Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+        if(!deviceIterator.hasNext()){
+            Log.d(TAG, "NO DEVICE FOUND");
+            }
+
+        while(deviceIterator.hasNext()){
+            Log.d(TAG, "DEVICE FOUND");
+            UsbDevice device = deviceIterator.next();
+
+            manager.requestPermission(device, mPermissionIntent);
+            //Wait until it gets the permission
+            while(!manager.hasPermission(device)){
+                ;
+                }
+
+            String Model = device.getDeviceName();
+
+            int DeviceID = device.getDeviceId();
+            int VID = device.getVendorId();
+            int PID = device.getProductId();
+            Log.d(TAG, String.format("Device ID = %d\nVID=0x%04x\nPID=0x%04x\n", DeviceID, VID, PID));
+            if((VID==0x03eb) && (PID==0xba94)){
+                if(!manager.hasPermission(device)){
+                    Log.d(TAG, "permission was not granted to the USB device!!!");
+                    return;
+                }
+                Log.d(TAG, "MATCH FOUND!");
+                usbfs_path = device.getDeviceName();
+                Log.d(TAG, "usbfs_path = " + usbfs_path);
+                connection = manager.openDevice(device);
+                file_descriptor = connection.getFileDescriptor();
+                Log.d(TAG, "fd = " + file_descriptor);
+                Log.d(TAG, "Returning...");
+                return;
+            } else if ((VID==0x03eb) && (PID==0x2fe4)) {
+                Log.d(TAG, "Device found but it is in bootloader mode!");
+                file_descriptor = -65;
+                return;
+            }
+        }
+    }
+
+    public static void findDevice_bootloader()
+    {
+        if (mSingleton != null) {
+            mSingleton.findDevice_bootloaderBis();
+        }
+    }
+
+    public void findDevice_bootloaderBis()
+    {
+        Log.d(TAG, "findDevice_bootloader");
+        PendingIntent mPermissionIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), PendingIntent.FLAG_MUTABLE);
+        } else {
+            mPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+        }
+        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);  //Handle to system USB service?
+        HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
+        Iterator<UsbDevice> deviceIterator = deviceList.values().iterator();
+        if(!deviceIterator.hasNext()){
+            Log.d(TAG, "NO DEVICE FOUND");
+            }
+
+        while(deviceIterator.hasNext()){
+            Log.d(TAG, "DEVICE FOUND");
+            UsbDevice device = deviceIterator.next();
+
+            manager.requestPermission(device, mPermissionIntent);
+            //Wait until it gets the permission
+            while(!manager.hasPermission(device)){
+                ;
+                }
+
+            String Model = device.getDeviceName();
+
+            int DeviceID = device.getDeviceId();
+            int VID = device.getVendorId();
+            int PID = device.getProductId();
+            Log.d(TAG, String.format("Device ID = %d\nVID=0x%04x\nPID=0x%04x\n", DeviceID, VID, PID));
+            if((VID==0x03eb) && (PID==0x2fe4)){
+                if(!manager.hasPermission(device)){
+                    Log.d(TAG, "permission was not granted to the USB device!!!");
+                    return;
+                    }
+                Log.d(TAG, "MATCH FOUND!");
+                usbfs_path = device.getDeviceName();
+                Log.d(TAG, "usbfs_path = " + usbfs_path);
+                connection = manager.openDevice(device);
+                file_descriptor = connection.getFileDescriptor();
+                Log.d(TAG, "fd = " + file_descriptor);
+                Log.d(TAG, "Returning...");
+                return;
+                }
+        }
+    }
+    public static void closeDevice()
+    {
+        if (mSingleton != null) {
+            mSingleton.closeDeviceBis();
+        }
+    }
+
+    public void closeDeviceBis() {
+        file_descriptor = -69;
+        Log.d(TAG, "androidInterface has been closed!");
+    }
+
+    public static int getFd() {
+        if (mSingleton != null) {
+            return mSingleton.getFdBis();
+        }
+        return -1;
+    }
+
+    public int getFdBis() {
+        return file_descriptor;
+    }
+
+    public static String getUsbfsPath() {
+        if (mSingleton != null) {
+            return mSingleton.getUsbfsPathBis();
+        }
+        return "";
+    }
+
+    public String getUsbfsPathBis() {
+        return usbfs_path;
+    }
+
 }
 
 /**
@@ -2226,5 +2406,6 @@ class SDLClipboardHandler implements
     public void onPrimaryClipChanged() {
         SDLActivity.onNativeClipboardChanged();
     }
+
 }
 
