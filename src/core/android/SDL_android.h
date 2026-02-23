@@ -132,11 +132,6 @@ bool Android_JNI_SendMessage(int command, int param);
 // MessageBox
 bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-// Labrador USB support
-int Android_JNI_getFd();
-void Android_JNI_FindDevice();
-bool Android_JNI_getUsbfsPath(char *buf, size_t buflen);
-
 // Cursor support
 int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
 void Android_JNI_DestroyCustomCursor(int cursorID);

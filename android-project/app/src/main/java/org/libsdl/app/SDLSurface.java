@@ -441,12 +441,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
-        // do the same normalization as in onTouch
-        float debug_x = detector.getFocusX();
-        float debug_y = detector.getFocusY();
-        float focus_x = getNormalizedX(detector.getFocusX());
-        float focus_y = getNormalizedY(detector.getFocusY());
-        SDLActivity.onNativePinchStart(focus_x, focus_y);
+        SDLActivity.onNativePinchStart();
         return true;
     }
 
