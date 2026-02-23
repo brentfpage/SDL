@@ -377,9 +377,6 @@ static jmethodID midIsDeXMode;
 static jmethodID midIsTablet;
 static jmethodID midManualBackButton;
 static jmethodID midMinimizeWindow;
-static jmethodID midFindDevice;
-static jmethodID midGetFd;
-static jmethodID midGetUsbfsPath;
 static jmethodID midOpenURL;
 static jmethodID midRequestPermission;
 static jmethodID midShowToast;
@@ -686,9 +683,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
     midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
     midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
-    midFindDevice = (*env)->GetStaticMethodID(env, mActivityClass, "findDevice", "()V");
-    midGetFd = (*env)->GetStaticMethodID(env, mActivityClass, "getFd", "()I");
-    midGetUsbfsPath = (*env)->GetStaticMethodID(env, mActivityClass, "getUsbfsPath", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
         !midClipboardHasText ||
@@ -720,10 +714,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSupportsRelativeMouse ||
         !midOpenFileDescriptor ||
         !midShowFileDialog ||
-        !midGetPreferredLocales ||
-        !midFindDevice ||
-        !midGetFd ||
-        !midGetUsbfsPath) {
+        !midGetPreferredLocales) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2780,42 +2771,6 @@ bool Android_JNI_GetLocale(char *buf, size_t buflen)
             (*env)->DeleteLocalRef(env, string);
         }
     }
-    return result;
-}
-
-void Android_JNI_FindDevice()
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mActivityClass, midFindDevice);
-}
-
-int Android_JNI_getFd()
-{
-    int result;
-    JNIEnv *env = Android_JNI_GetEnv();
-    result = (*env)->CallStaticIntMethod(env, mActivityClass, midGetFd);
-    return result;
-}
-
-//  using Android_JNI_GetLocale as a template
-bool Android_JNI_getUsbfsPath(char* buf, size_t buflen)
-{
-    bool result = false;
-    if (buf && buflen > 0) {
-        *buf = '\0';
-        JNIEnv *env = Android_JNI_GetEnv();
-        jstring string = (jstring)(*env)->CallStaticObjectMethod(env, mActivityClass, midGetUsbfsPath);
-        if (string) {
-            const char *utf8string = (*env)->GetStringUTFChars(env, string, NULL);
-            if (utf8string) {
-                result = true;
-                SDL_strlcpy(buf, utf8string, buflen);
-                (*env)->ReleaseStringUTFChars(env, string, utf8string);
-            }
-            (*env)->DeleteLocalRef(env, string);
-        }
-    }
-
     return result;
 }
 
