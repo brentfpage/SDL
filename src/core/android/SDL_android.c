@@ -232,7 +232,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeSoftReturnKey", "()Z", SDL_JAVA_INTERFACE(onNativeSoftReturnKey) },
     { "onNativeKeyboardFocusLost", "()V", SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost) },
     { "onNativeTouch", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativeTouch) },
-    { "onNativePinchStart", "(FF)V", SDL_JAVA_INTERFACE(onNativePinchStart) },
+    { "onNativePinchStart", "()V", SDL_JAVA_INTERFACE(onNativePinchStart) },
     { "onNativePinchUpdate", "(FFFFF)V", SDL_JAVA_INTERFACE(onNativePinchUpdate) },
     { "onNativePinchEnd", "()V", SDL_JAVA_INTERFACE(onNativePinchEnd) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
@@ -1401,7 +1401,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchStart)(
     SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window) {
-        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, Android_Window, 0, 0, 0, focus_x, focus_y);
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, Android_Window, 0, 0, 0, 0, 0);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
