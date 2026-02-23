@@ -53,18 +53,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbManager;
-import android.hardware.usb.UsbDeviceConnection;
-import android.app.PendingIntent;
-
-import android.content.res.AssetManager;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.lang.String;
-
-
 
 /**
     SDL Activity
@@ -241,14 +229,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static SDLFileDialogState mFileDialogState = null;
     protected static boolean mDispatchingKeyEvent = false;
 
-//     private static final String ACTION_USB_PERMISSION = "com.example.myapplication.USB_PERMISSION";
-    private static final String ACTION_USB_PERMISSION = "org.libusb.app.USB_PERMISSION";
-
-    protected static String usbfs_path;
-    protected static int file_descriptor;
-    private static UsbDeviceConnection connection;
-
-
     public static SDLGenericMotionListener_API14 getMotionListener() {
         if (mMotionListener == null) {
             if (Build.VERSION.SDK_INT >= 29 /* Android 10 (Q) */) {
@@ -355,10 +335,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mHasFocus = true;
         mNextNativeState = NativeState.INIT;
         mCurrentNativeState = NativeState.INIT;
-
-        file_descriptor = -1;
-        usbfs_path = null;
-        connection = null;
     }
 
     protected SDLSurface createSDLSurface(Context context) {
