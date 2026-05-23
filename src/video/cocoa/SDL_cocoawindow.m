@@ -2042,8 +2042,18 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         break;
     case NSEventPhaseChanged:
         {
+            NSArray* allTouches = [[theEvent allTouches] allObjects];
+            NSPoint point1 = [[allTouches objectAtIndex:0] normalizedPosition];
+            NSPoint point2 = [[allTouches objectAtIndex:1] normalizedPosition];
+            CGFloat span_x = SDL_abs(point1.x - point2.x);
+            CGFloat span_y = SDL_abs(point1.y - point2.y);
+            CGFloat focus_x = (point1.x + point2.x)/2;
+            CGFloat focus_y = (point1.y + point2.y)/2;
+            // Make the origin the upper left instead of the lower left 
+            focus_y = 1.0f - focus_y;
+            
             CGFloat scale = 1.0f + [theEvent magnification];
-            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale, 0, 0, 0, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale, span_x, span_y, focus_x, focus_y);
         }
         break;
     case NSEventPhaseEnded:

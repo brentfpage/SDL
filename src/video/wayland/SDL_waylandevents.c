@@ -322,7 +322,7 @@ static void handle_pinch_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *
         seat->pointer.gesture_focus = wind;
 
         const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
-        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, timestamp, wind->sdlwindow, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, timestamp, wind->sdlwindow, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f);
     }
 }
 
@@ -334,7 +334,7 @@ static void handle_pinch_update(void *data, struct zwp_pointer_gesture_pinch_v1 
     if (seat->pointer.gesture_focus) {
         const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
         const float s = (float)wl_fixed_to_double(scale);
-        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, timestamp, seat->pointer.gesture_focus->sdlwindow, s, 0.0f, 0.0f, 0.0f, 0.0f);
+        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, timestamp, seat->pointer.gesture_focus->sdlwindow, s, -1.0f, -1.0f, -1.0f, -1.0f);
     }
 }
 
@@ -344,7 +344,7 @@ static void handle_pinch_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zw
 
     if (seat->pointer.gesture_focus) {
         const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
-        SDL_SendPinch(SDL_EVENT_PINCH_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f);
 
         seat->pointer.gesture_focus = NULL;
     }
