@@ -493,8 +493,8 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             break;
 
         case UIGestureRecognizerStateChanged:
-            CGPoint point1 = [recognizer locationOfTouch:0 InView:self];
-            CGPoint point2 = [recognizer locationOfTouch:1 InView:self];
+            CGPoint point1 = [sender locationOfTouch:0 InView:self];
+            CGPoint point2 = [sender locationOfTouch:1 InView:self];
             CGFloat focus_x = (point1.x + point2.x)/2;
             CGFloat focus_y = (point1.y + point2.y)/2;
             CGFloat span_x = SDL_abs(point1.x - point2.x);
