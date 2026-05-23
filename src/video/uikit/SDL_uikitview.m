@@ -500,10 +500,10 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             CGFloat span_x = SDL_abs(point1.x - point2.x);
             CGFloat span_y = SDL_abs(point1.y - point2.y);
             CGRect bounds = self.bounds;
-            centerx /= bounds.size.width;
-            centery /= bounds.size.height;
-            spanx /= bounds.size.width;
-            spany /= bounds.size.height;
+            center_x /= bounds.size.width;
+            center_y /= bounds.size.height;
+            span_x /= bounds.size.width;
+            span_y /= bounds.size.height;
 
             if (pinch_scale > 0.0f) {
                 SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale, span_x, span_y, focus_x, focus_y);
