@@ -484,34 +484,26 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     CGFloat scale = sender.scale;
     UIGestureRecognizerState state = sender.state;
-    CGPoint point1;
-    CGPoint point2;
-    CGFloat focus_x;
-    CGFloat focus_y;
-    CGFloat span_x;
-    CGFloat span_y; 
-    CGRect bounds;
+    CGPoint point1 = [sender locationOfTouch:0 inView:self];
+    CGPoint point2 = [sender locationOfTouch:1 inView:self];
+    CGFloat focus_x = (point1.x + point2.x)/2;
+    CGFloat focus_y = (point1.y + point2.y)/2;
+    CGFloat span_x = SDL_fabs(point1.x - point2.x);
+    CGFloat span_y = SDL_fabs(point1.y - point2.y);
+    CGRect bounds = self.bounds;
+    focus_x /= bounds.size.width;
+    focus_y /= bounds.size.height;
+    span_x /= bounds.size.width;
+    span_y /= bounds.size.height;
 
     switch (state) {
 
         case UIGestureRecognizerStateBegan:
             pinch_scale = 1.0f;
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0, 0, 0, 0, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
             break;
 
         case UIGestureRecognizerStateChanged:
-            point1 = [sender locationOfTouch:0 inView:self];
-            point2 = [sender locationOfTouch:1 inView:self];
-            focus_x = (point1.x + point2.x)/2;
-            focus_y = (point1.y + point2.y)/2;
-            span_x = SDL_fabs(point1.x - point2.x);
-            span_y = SDL_fabs(point1.y - point2.y);
-            bounds = self.bounds;
-            focus_x /= bounds.size.width;
-            focus_y /= bounds.size.height;
-            span_x /= bounds.size.width;
-            span_y /= bounds.size.height;
-
             if (pinch_scale > 0.0f) {
                 SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale, span_x, span_y, focus_x, focus_y);
             }
@@ -521,7 +513,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         case UIGestureRecognizerStateFailed:
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, 0, 0, 0, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0, span_x, span_y, focus_x, focus_y);
             break;
 
         default:
